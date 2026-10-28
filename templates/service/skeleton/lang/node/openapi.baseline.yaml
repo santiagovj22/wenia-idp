@@ -1,0 +1,90 @@
+openapi: "3.0.3"
+info:
+  title: "${{ values.serviceName }}"
+  version: "1.0.0"
+  description: "Baseline Endpoints shipped by the Wenia Service Template. The contract test checks this file."
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+  /items:
+    get:
+      summary: List all items
+      operationId: listItems
+      responses:
+        "200":
+          description: OK
+    post:
+      summary: Create an item
+      operationId: createItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemInput"
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Validation error
+  /items/{id}:
+    get:
+      summary: Get an item
+      operationId: getItem
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not found
+    put:
+      summary: Update an item
+      operationId: updateItem
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemInput"
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not found
+    delete:
+      summary: Delete an item
+      operationId: deleteItem
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+components:
+  schemas:
+    ItemInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string

@@ -1,0 +1,47 @@
+---
+# AD-14: Catalog entity registered by wenia:publish.
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.serviceName }}
+  title: ${{ values.serviceName }}
+  description: "${{ values.description }}"
+  annotations:
+    github.com/project-slug: ${{ values.ownerRepo }}
+    backstage.io/source-location: "url:https://github.com/${{ values.ownerRepo }}"
+    wenia.io/template-version: "${{ values.templateVersion }}"
+    wenia.io/template-ref: "${{ values.templateRef }}"
+    wenia.io/maturity: "${{ values.maturity }}"
+  links:
+    - url: https://github.com/${{ values.ownerRepo }}/blob/main/docs/runbook.md
+      title: Runbook
+      icon: docs
+    - url: https://github.com/${{ values.ownerRepo }}/blob/main/docs/troubleshooting.md
+      title: Troubleshooting
+      icon: warning
+spec:
+  type: service
+  lifecycle: experimental
+  owner: ${{ values.owner }}
+  tags:
+    - ${{ values.language }}
+    - ${{ values.serviceType }}
+  providesApis:
+    - ${{ values.serviceName }}-api
+---
+# AD-15: API entity. definition resolves from openapi.yaml in the repo.
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ${{ values.serviceName }}-api
+  title: "${{ values.serviceName }} API"
+  description: "API for ${{ values.serviceName }}"
+  annotations:
+    github.com/project-slug: ${{ values.ownerRepo }}
+    wenia.io/template-version: "${{ values.templateVersion }}"
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: ${{ values.owner }}
+  definition:
+    $text: ./openapi.yaml

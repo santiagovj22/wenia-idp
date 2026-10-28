@@ -1,0 +1,314 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: wenia-service-template
+  title: Wenia Service Template
+  description: >
+    Create a new microservice with a GitHub repository, CI/CD, Terraform,
+    New Relic observability and operating documentation — registered in the catalog.
+  tags:
+    - nodejs
+    - python
+    - k8s
+    - lambda
+    - recommended
+spec:
+  owner: group:default/platform
+  type: service
+
+  # ── Form ────────────────────────────────────────────────────────────────
+  parameters:
+    - title: Service Details
+      required:
+        - serviceName
+        - language
+        - serviceType
+        - owner
+        - description
+      properties:
+        serviceName:
+          title: Service Name
+          type: string
+          description: >
+            Lowercase kebab-case, 3–40 characters, starts with a letter, ends
+            with a letter or digit, no consecutive hyphens.
+          pattern: '^[a-z][a-z0-9-]{1,38}[a-z0-9]$'
+          ui:autofocus: true
+
+        language:
+          title: Language
+          type: string
+          enum: [nodejs, python]
+          enumNames: ['Node.js', 'Python']
+
+        serviceType:
+          title: Service Type
+          type: string
+          enum: [k8s, lambda]
+          enumNames: ['Service on Kubernetes', 'AWS Lambda']
+
+        owner:
+          title: Owning Team
+          type: string
+          description: The Backstage Group that will own this service.
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds: [Group]
+
+        description:
+          title: Description
+          type: string
+          description: What this service does (max 200 characters).
+          maxLength: 200
+
+        failureInjection:
+          title: Failure Injection (demo only)
+          type: string
+          description: >
+            Inject a failure at this step. Only works when the server has
+            WENIA_FAILURE_INJECTION=enabled. Leave as 'none' in normal use.
+          default: none
+          enum: [none, before-publish, after-repo-create, at-register]
+          enumNames:
+            - None
+            - Before publishing (no repo created)
+            - After creating repo (tests cleanup)
+            - At catalog registration (tests cleanup)
+
+    - title: API Definition
+      properties:
+        apiDefinition:
+          title: OpenAPI 3 Definition
+          type: string
+          description: >
+            Your service's OpenAPI document (max 200 KB, no external $ref).
+            This is validated, sanitised, and registered in the catalog as-is.
+            It does NOT generate code — the Baseline Endpoints are fixed.
+          ui:widget: textarea
+          ui:options:
+            rows: 22
+          # Prefilled sample matches the Baseline Endpoints (AD-15).
+          default: |
+            openapi: "3.0.3"
+            info:
+              title: "my-service"
+              version: "1.0.0"
+            paths:
+              /health:
+                get:
+                  summary: Health check
+                  operationId: getHealth
+                  responses:
+                    "200":
+                      description: Service is healthy
+              /items:
+                get:
+                  summary: List all items
+                  operationId: listItems
+                  responses:
+                    "200":
+                      description: OK
+                post:
+                  summary: Create an item
+                  operationId: createItem
+                  requestBody:
+                    required: true
+                    content:
+                      application/json:
+                        schema:
+                          $ref: "#/components/schemas/ItemInput"
+                  responses:
+                    "201":
+                      description: Created
+                    "400":
+                      description: Validation error
+              /items/{id}:
+                get:
+                  summary: Get an item
+                  operationId: getItem
+                  parameters:
+                    - {name: id, in: path, required: true, schema: {type: string}}
+                  responses:
+                    "200":
+                      description: OK
+                    "404":
+                      description: Not found
+                put:
+                  summary: Update an item
+                  operationId: updateItem
+                  parameters:
+                    - {name: id, in: path, required: true, schema: {type: string}}
+                  requestBody:
+                    required: true
+                    content:
+                      application/json:
+                        schema:
+                          $ref: "#/components/schemas/ItemInput"
+                  responses:
+                    "200":
+                      description: OK
+                    "404":
+                      description: Not found
+                delete:
+                  summary: Delete an item
+                  operationId: deleteItem
+                  parameters:
+                    - {name: id, in: path, required: true, schema: {type: string}}
+                  responses:
+                    "204":
+                      description: Deleted
+                    "404":
+                      description: Not found
+            components:
+              schemas:
+                ItemInput:
+                  type: object
+                  required: [name]
+                  properties:
+                    name:
+                      type: string
+                      minLength: 1
+                    description:
+                      type: string
+
+  # ── Steps ───────────────────────────────────────────────────────────────
+  steps:
+    # 1. Preflight: validate inputs, sanitise API Definition, check for
+    #    duplicates in the Catalog and on GitHub. Writes openapi.yaml to
+    #    the workspace as data (never rendered by the template engine). AD-1,5.
+    - id: preflight
+      name: Validate inputs and check for duplicates
+      action: wenia:preflight
+      input:
+        serviceName: ${{ parameters.serviceName }}
+        language: ${{ parameters.language }}
+        serviceType: ${{ parameters.serviceType }}
+        owner: ${{ parameters.owner }}
+        description: ${{ parameters.description }}
+        apiDefinition: ${{ parameters.apiDefinition }}
+        failureInjection: ${{ parameters.failureInjection }}
+
+    # 2. Common layer — shared by all Language/ServiceType combinations.
+    - id: fetch-common
+      name: Render common skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton/common
+        targetPath: .
+        values:
+          serviceName: ${{ parameters.serviceName }}
+          language: ${{ parameters.language }}
+          serviceType: ${{ parameters.serviceType }}
+          owner: ${{ parameters.owner }}
+          description: ${{ parameters.description }}
+          templateVersion: "1.0.0"
+          templateRef: "template:default/wenia-service-template"
+          maturity: "full"
+          ownerRepo: "santiagovj22/${{ parameters.serviceName }}"
+
+    # 3a. Node.js language layer (replace: true wins over common). AD-6.
+    - id: fetch-lang-node
+      name: Render Node.js skeleton
+      if: ${{ parameters.language === 'nodejs' }}
+      action: fetch:template
+      input:
+        url: ./skeleton/lang/node
+        targetPath: .
+        replace: true
+        values:
+          serviceName: ${{ parameters.serviceName }}
+          language: ${{ parameters.language }}
+          serviceType: ${{ parameters.serviceType }}
+          owner: ${{ parameters.owner }}
+          description: ${{ parameters.description }}
+          templateVersion: "1.0.0"
+          templateRef: "template:default/wenia-service-template"
+          maturity: "full"
+          ownerRepo: "santiagovj22/${{ parameters.serviceName }}"
+
+    # 3b. Python language layer (thin skeleton, P1).
+    - id: fetch-lang-python
+      name: Render Python skeleton
+      if: ${{ parameters.language === 'python' }}
+      action: fetch:template
+      input:
+        url: ./skeleton/lang/python
+        targetPath: .
+        replace: true
+        values:
+          serviceName: ${{ parameters.serviceName }}
+          language: ${{ parameters.language }}
+          serviceType: ${{ parameters.serviceType }}
+          owner: ${{ parameters.owner }}
+          description: ${{ parameters.description }}
+          templateVersion: "1.0.0"
+          templateRef: "template:default/wenia-service-template"
+          maturity: "thin"
+          ownerRepo: "santiagovj22/${{ parameters.serviceName }}"
+
+    # 4a. K8s type layer (replace: true; GitHub Actions files NOT rendered). AD-6.
+    - id: fetch-type-k8s
+      name: Render K8s skeleton
+      if: ${{ parameters.serviceType === 'k8s' }}
+      action: fetch:template
+      input:
+        url: ./skeleton/type/k8s
+        targetPath: .
+        replace: true
+        copyWithoutTemplating:
+          - .github/workflows/**
+        values:
+          serviceName: ${{ parameters.serviceName }}
+          language: ${{ parameters.language }}
+          serviceType: ${{ parameters.serviceType }}
+          owner: ${{ parameters.owner }}
+          description: ${{ parameters.description }}
+          templateVersion: "1.0.0"
+          templateRef: "template:default/wenia-service-template"
+          maturity: "full"
+          ownerRepo: "santiagovj22/${{ parameters.serviceName }}"
+
+    # 4b. Lambda type layer (thin skeleton, P1).
+    - id: fetch-type-lambda
+      name: Render Lambda skeleton
+      if: ${{ parameters.serviceType === 'lambda' }}
+      action: fetch:template
+      input:
+        url: ./skeleton/type/lambda
+        targetPath: .
+        replace: true
+        copyWithoutTemplating:
+          - .github/workflows/**
+        values:
+          serviceName: ${{ parameters.serviceName }}
+          language: ${{ parameters.language }}
+          serviceType: ${{ parameters.serviceType }}
+          owner: ${{ parameters.owner }}
+          description: ${{ parameters.description }}
+          templateVersion: "1.0.0"
+          templateRef: "template:default/wenia-service-template"
+          maturity: "thin"
+          ownerRepo: "santiagovj22/${{ parameters.serviceName }}"
+
+    # 5. Publish: create repo, push, register in Catalog. AD-1,2,3.
+    - id: publish
+      name: Create repository and register in catalog
+      action: wenia:publish
+      input:
+        serviceName: ${{ parameters.serviceName }}
+        language: ${{ parameters.language }}
+        serviceType: ${{ parameters.serviceType }}
+        owner: ${{ parameters.owner }}
+        description: ${{ parameters.description }}
+        templateVersion: "1.0.0"
+        templateRef: "template:default/wenia-service-template"
+        failureInjection: ${{ parameters.failureInjection }}
+
+  # ── Output links (shown only after publish succeeds) ─────────────────────
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.repoUrl }}
+      - title: Open in Catalog
+        icon: catalog
+        entityRef: ${{ steps.publish.output.entityRef }}

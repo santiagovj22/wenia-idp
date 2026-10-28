@@ -1,0 +1,19 @@
+# CD caller — Lambda variant. Copied without templating (AD-6).
+name: CD
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  cd:
+    uses: santiagovj22/wenia-platform-workflows/.github/workflows/cd.yml@v1
+    with:
+      service-name: replace-with-service-name
+      language: nodejs
+      node-version: '22'

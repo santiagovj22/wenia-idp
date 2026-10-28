@@ -1,0 +1,17 @@
+# CI caller — Lambda variant. Copied without templating (AD-6).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: santiagovj22/wenia-platform-workflows/.github/workflows/ci.yml@v1
+    with:
+      service-name: replace-with-service-name
+      language: nodejs
+      node-version: '22'

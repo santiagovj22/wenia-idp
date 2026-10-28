@@ -1,0 +1,6 @@
+{
+  "name": "wenia-service-template",
+  "version": "${{ values.templateVersion }}",
+  "maturity": "${{ values.maturity }}",
+  "ref": "${{ values.templateRef }}"
+}

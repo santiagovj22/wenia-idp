@@ -1,0 +1,19 @@
+# CI caller — copied without templating (AD-6) so ${{ }} is GitHub Actions syntax.
+# Calls the shared reusable workflow pinned to @v1 (AD-8).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# AD-8: CI is read-only. It must never push an image or deploy.
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: santiagovj22/wenia-platform-workflows/.github/workflows/ci.yml@v1
+    with:
+      service-name: replace-with-service-name
+      language: nodejs
+      node-version: '22'
