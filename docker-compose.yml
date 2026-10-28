@@ -5,8 +5,8 @@
 services:
   backstage:
     build:
-      context: ./backstage
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backstage/Dockerfile
     ports:
       - "7007:7007"
     env_file:

@@ -1,0 +1,26 @@
+# Root-level .dockerignore (context is the repo root).
+# Keeps the build context small.
+
+# Backstage-specific noise
+backstage/.git
+backstage/.yarn/cache
+backstage/.yarn/install-state.gz
+backstage/node_modules
+backstage/packages/*/node_modules
+backstage/plugins/*/node_modules
+backstage/*.local.yaml
+
+# Planning artifacts (not needed in the image)
+_bmad/
+_bmad-output/
+_wenia-platform-workflows/
+specs/
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Secrets
+.env
