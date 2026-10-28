@@ -1,0 +1,8 @@
+# Story 1.1 / AD-11: LF everywhere so scripts and Dockerfiles work in Linux containers.
+* text=auto eol=lf
+
+# Binary files must not be normalized.
+*.png binary
+*.jpg binary
+*.pdf binary
+*.zip binary
