@@ -1,0 +1,101 @@
+# Reusable CD workflow — called by generated services.
+# AD-8: separate from CI; publishes the image to GHCR, then deploys only
+# when the repository variable DEPLOY_ENABLED=true.
+#
+# Callers pins this with @v1:
+#   uses: <owner>/wenia-platform-workflows/.github/workflows/cd.yml@v1
+
+name: Reusable CD
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        description: Name of the service
+        required: true
+        type: string
+      language:
+        description: "Programming language: nodejs or python"
+        required: true
+        type: string
+      node-version:
+        description: Node.js version (nodejs only)
+        required: false
+        type: string
+        default: '22'
+      image-registry:
+        description: Container registry host
+        required: false
+        type: string
+        default: ghcr.io
+
+permissions:
+  contents: read
+  packages: write   # needed to push to GHCR
+
+jobs:
+  publish:
+    name: Build and push image
+    runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.image-registry }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ inputs.image-registry }}/${{ github.repository_owner }}/${{ inputs.service-name }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=tag
+
+      - name: Build and push image to GHCR
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    name: Deploy
+    needs: publish
+    runs-on: ubuntu-latest
+
+    steps:
+      # AD-8: if no deploy target is configured, stop clearly — never report
+      # a deployment that did not happen.
+      - name: Check deploy target
+        id: check
+        run: |
+          if [ "${{ vars.DEPLOY_ENABLED }}" != "true" ]; then
+            echo "NOT DEPLOYED: no target configured."
+            echo "Set the repository variable DEPLOY_ENABLED=true to enable deployment."
+            echo "Image published: ${{ needs.publish.outputs.image }}"
+          else
+            echo "Deploy target is enabled."
+          fi
+
+      - name: Checkout (deploy only)
+        if: vars.DEPLOY_ENABLED == 'true'
+        uses: actions/checkout@v4
+
+      # Add real deployment steps here (kubectl apply, AWS Lambda update, etc.)
+      # These are added per-service or per-environment as needed.
+      - name: Deploy placeholder
+        if: vars.DEPLOY_ENABLED == 'true'
+        run: |
+          echo "Deploying ${{ inputs.service-name }} from image ${{ needs.publish.outputs.image }}"
+          echo "Add deployment commands here."

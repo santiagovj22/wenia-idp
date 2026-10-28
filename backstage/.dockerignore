@@ -1,0 +1,9 @@
+# Story 1.2: the build stage needs packages/*/src to compile, so do NOT ignore it.
+# The original create-app .dockerignore excluded src expecting a pre-built host
+# bundle; we build inside Docker instead (AD-11).
+.git
+.yarn/cache
+.yarn/install-state.gz
+node_modules
+packages/*/node_modules
+*.local.yaml

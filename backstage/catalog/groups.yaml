@@ -1,0 +1,59 @@
+# Story 1.2 / AD-14: seeded Groups.
+# These must exist before the first generation so the Owning Team picker
+# shows something on a clean checkout.  Add more teams as needed.
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: payments
+  title: Payments Team
+  description: Team responsible for payment and billing services.
+  annotations:
+    backstage.io/managed-by-location: "file:./catalog/groups.yaml"
+spec:
+  type: team
+  profile:
+    displayName: Payments
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: platform
+  title: Platform Team
+  description: Internal developer platform team.
+  annotations:
+    backstage.io/managed-by-location: "file:./catalog/groups.yaml"
+spec:
+  type: team
+  profile:
+    displayName: Platform
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: data
+  title: Data Team
+  description: Data engineering and analytics team.
+  annotations:
+    backstage.io/managed-by-location: "file:./catalog/groups.yaml"
+spec:
+  type: team
+  profile:
+    displayName: Data
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: backend
+  title: Backend Team
+  description: Core backend services team.
+  annotations:
+    backstage.io/managed-by-location: "file:./catalog/groups.yaml"
+spec:
+  type: team
+  profile:
+    displayName: Backend
+  children: []

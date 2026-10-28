@@ -1,0 +1,88 @@
+# Reusable CI workflow — called by generated services.
+# AD-8: permissions are contents: read only; never pushes an image.
+#
+# Callers pin this with @v1:
+#   uses: <owner>/wenia-platform-workflows/.github/workflows/ci.yml@v1
+
+name: Reusable CI
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        description: Name of the service (used for the image tag)
+        required: true
+        type: string
+      language:
+        description: "Programming language: nodejs or python"
+        required: true
+        type: string
+      node-version:
+        description: Node.js version to use (nodejs only)
+        required: false
+        type: string
+        default: '22'
+
+# AD-8: CI is read-only. It must never push an image or deploy.
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Test, scan and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Node.js setup ────────────────────────────────────────────────────
+      - name: Set up Node.js
+        if: inputs.language == 'nodejs'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Install dependencies (Node.js)
+        if: inputs.language == 'nodejs'
+        run: npm install
+
+      # ── Python setup ─────────────────────────────────────────────────────
+      - name: Set up Python
+        if: inputs.language == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies (Python)
+        if: inputs.language == 'python'
+        run: pip install -r requirements.txt
+
+      # ── Unit tests ───────────────────────────────────────────────────────
+      - name: Run unit tests (Node.js)
+        if: inputs.language == 'nodejs'
+        run: npm test
+
+      - name: Run unit tests (Python)
+        if: inputs.language == 'python'
+        run: python -m pytest
+
+      # ── Security: secrets scan ───────────────────────────────────────────
+      - name: Secrets scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Security: dependency audit ────────────────────────────────────────
+      - name: Dependency vulnerability audit (Node.js)
+        if: inputs.language == 'nodejs'
+        run: npm audit --audit-level=high
+        continue-on-error: true   # advisory; does not block the demo
+
+      # ── Image build (no push) ─────────────────────────────────────────────
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: ${{ inputs.service-name }}:ci-${{ github.sha }}

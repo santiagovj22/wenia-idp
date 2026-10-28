@@ -1,0 +1,13 @@
+---
+# Points Backstage at the Service Template from the local filesystem.
+# The Dockerfile copies the templates/ folder into the image at build time.
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: wenia-service-template
+  description: Location for the Wenia Service Template
+spec:
+  type: file
+  # Resolved from /app/ (the backend's working directory in the container).
+  # The templates/ folder is copied to /app/templates/ by the Dockerfile.
+  target: ../templates/service/template.yaml

@@ -1,0 +1,56 @@
+# Story 1.2: production config — loaded on top of app-config.yaml inside Docker.
+# Secrets are never put here; they come from environment variables.
+
+app:
+  baseUrl: http://localhost:7007
+
+backend:
+  baseUrl: http://localhost:7007
+  listen: ':7007'
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+
+# GitHub integration — the token is supplied by the GITHUB_TOKEN env var.
+# AD-10: never put the token value here.
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+
+# Auth: guest sign-in is fine for a local PoC demo.
+# LIMIT: this must be replaced with a real provider before any production use.
+auth:
+  environment: development
+  providers:
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
+
+# Scaffolder: where generated repos are owned
+scaffolder:
+  defaultAuthor:
+    name: Wenia IDP
+    email: idp@wenia.local
+
+catalog:
+  # AD-14: allow Group and User from our seeded file; allow the kinds we generate.
+  rules:
+    - allow: [Component, API, Template, Location, Group, User]
+
+  locations:
+    # Seeded teams (Groups) — must exist before the first generation so the
+    # Owning Team picker is populated. (AD-14)
+    - type: file
+      target: ./catalog/groups.yaml
+      rules:
+        - allow: [Group, User]
+
+    # Wenia Service Template (story 2.2/2.3)
+    - type: file
+      target: ./catalog/wenia-template-location.yaml
+      rules:
+        - allow: [Location, Template]
