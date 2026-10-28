@@ -1,0 +1,53 @@
+# Story 1.2 / AD-11: Backstage + Postgres, built entirely inside Docker.
+# Run:  docker compose up --build
+# Stop: docker compose down  (add -v to also remove the Postgres volume)
+
+services:
+  backstage:
+    build:
+      context: ./backstage
+      dockerfile: Dockerfile
+    ports:
+      - "7007:7007"
+    env_file:
+      - .env
+    environment:
+      # Postgres connection (matches the service below)
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: backstage
+      POSTGRES_PASSWORD: backstage
+      # GitHub integration (from .env)
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      # New Relic telemetry (from .env, optional)
+      NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY:-}
+      # Failure injection gate (from .env, leave empty in normal use)
+      WENIA_FAILURE_INJECTION: ${WENIA_FAILURE_INJECTION:-}
+      # Tell Backstage which extra config to load (seeded catalog + wenia config)
+      APP_CONFIG_app_baseUrl: "http://localhost:7007"
+      APP_CONFIG_backend_baseUrl: "http://localhost:7007"
+    volumes:
+      # Run log written by the onboarding module (story 3.4)
+      - runs_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: backstage
+      POSTGRES_PASSWORD: backstage
+      POSTGRES_DB: backstage
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U backstage"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  runs_data:
