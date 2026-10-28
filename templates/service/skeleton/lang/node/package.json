@@ -12,6 +12,9 @@
     "fastify": "^4.28.1",
     "pino": "^9.5.0"
   },
+  "devDependencies": {
+    "js-yaml": "^4.1.0"
+  },
   "engines": {
     "node": ">=22"
   }
