@@ -1,6 +1,4 @@
 'use strict'
-// AD-16: Baseline Endpoints — routes layer. Routes never touch the
-// repository directly (routes → service → repository).
 
 const { ItemsService } = require('../service/itemsService')
 

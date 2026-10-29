@@ -1,5 +1,4 @@
 'use strict'
-// AD-16: Service layer — business logic between routes and repository.
 
 const { ItemsRepository } = require('../repository/itemsRepository')
 

@@ -1,5 +1,5 @@
 ---
-# AD-14: Catalog entity registered by wenia:publish.
+
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
@@ -29,7 +29,7 @@ spec:
   providesApis:
     - ${{ values.serviceName }}-api
 ---
-# AD-15: API entity. definition resolves from openapi.yaml in the repo.
+
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:

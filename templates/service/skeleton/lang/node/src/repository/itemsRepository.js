@@ -1,7 +1,4 @@
 'use strict'
-// AD-16: Repository interface — in-memory implementation.
-// Data is lost on restart (by design for the PoC).
-// Swap this class for a database-backed implementation later.
 
 const { randomUUID } = require('crypto')
 

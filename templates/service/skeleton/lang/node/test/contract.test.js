@@ -1,11 +1,10 @@
 'use strict'
-// AD-15 / FR-21: Contract test — checks that the service's Baseline Endpoints
-// match openapi.baseline.yaml.  Runs as: node --test test/contract.test.js
+
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const fs = require('fs')
 const path = require('path')
-const yaml = require('js-yaml')   // added as devDependency in package.json
+const yaml = require('js-yaml')
 const { buildApp } = require('../src/index')
 
 const BASELINE = path.join(__dirname, '..', 'openapi.baseline.yaml')
@@ -22,7 +21,7 @@ test('all paths in openapi.baseline.yaml are reachable', async (t) => {
   for (const [urlPath, methods] of Object.entries(spec.paths)) {
     for (const method of Object.keys(methods)) {
       const httpMethod = method.toUpperCase()
-      // Build a test URL; replace path params with plausible values.
+
       const url = urlPath.replace(/{[^}]+}/g, 'test-id')
 
       await t.test(`${httpMethod} ${url} returns a non-5xx status`, async () => {

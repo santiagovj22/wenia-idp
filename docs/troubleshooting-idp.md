@@ -149,7 +149,7 @@ El servicio fue generado con una versión anterior del template que no incluía 
 
 ---
 
-## 7. Demostrar failure injection (Evidencia E4)
+## 7. Demostrar failure injection
 
 ```powershell
 # 1. Habilitar en .env

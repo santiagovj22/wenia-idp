@@ -1,7 +1,4 @@
 'use strict'
-// AD-12: OpenTelemetry setup. Reads standard OTEL_* env vars.
-// Without OTEL_EXPORTER_OTLP_ENDPOINT the exporter is disabled and the
-// service logs "telemetry disabled" — it never crashes.
 
 function init () {
   const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT
@@ -15,7 +12,6 @@ function init () {
   }
 
   try {
-    // Dynamic require so the service starts even if the SDK isn't installed yet.
     const { NodeSDK } = require('@opentelemetry/sdk-node')
     const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-http')
     const { resourceFromAttributes } = require('@opentelemetry/resources')

@@ -1,5 +1,5 @@
 'use strict'
-// Story 4.2 / FR-21: unit tests for the five Baseline Endpoints.
+
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const { buildApp } = require('../src/index')
