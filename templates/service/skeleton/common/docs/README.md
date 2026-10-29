@@ -47,16 +47,6 @@ curl http://localhost:3000/items
 
 ---
 
-## Verify
-
-Run the Wenia evidence harness from the root IDP repository:
-
-```bash
-node verify/run.mjs
-```
-
----
-
 ## Operate
 
 See [docs/runbook.md](runbook.md) and [docs/troubleshooting.md](troubleshooting.md).
