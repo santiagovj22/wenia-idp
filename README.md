@@ -1,6 +1,6 @@
 # Wenia Service Onboarding — Golden Path in Backstage
 
-A PoC for the Wenia Platform Engineer case study.
+Internal Developer Platform for the Wenia Platform Engineer case study.
 A developer fills in one form in Backstage and gets a GitHub repository with a working service, containers, CI/CD, Terraform, New Relic observability and documentation — already registered in the catalog.
 
 > **Language note:** the technical document and demo video are in Spanish. Code and READMEs are in English.
@@ -12,7 +12,7 @@ A developer fills in one form in Backstage and gets a GitHub repository with a w
 | Tool | Version | Notes |
 | --- | --- | --- |
 | Docker Desktop | any recent | must be running |
-| Terraform | any recent | for evidence E6 |
+| Terraform | any recent | |
 | git | any | |
 
 No Wenia infrastructure, accounts or credentials are required.
@@ -26,7 +26,7 @@ No Wenia infrastructure, accounts or credentials are required.
 ```bash
 cp .env.example .env
 # Fill in GITHUB_TOKEN (classic PAT: repo, workflow, delete_repo)
-# Fill in NEW_RELIC_LICENSE_KEY if you want live telemetry (optional)
+
 # Leave WENIA_FAILURE_INJECTION empty
 ```
 
@@ -38,7 +38,7 @@ docker run --rm -v "${PWD}:/workspace" -w /workspace cytopia/ansible:2.15 `
 ```
 
 This creates `data/`, your `.env` (if missing), and `backstage/app-config.local.yaml`.
-Run it twice — the second run must report `changed=0` (Evidence E7).
+Run it twice — the second run must report `changed=0`.
 
 ### 3. Start Backstage
 
@@ -56,6 +56,29 @@ First start is slow (~3–5 min) while the image builds and migrations run.
 3. Fill in the form and click **Create**
 4. Follow the links to your new GitHub repository and Catalog entry
 
+## Checklist de inicio limpio
+
+Para reproducir el entorno desde cero:
+
+```powershell
+# 1. Clonar el repositorio
+git clone https://github.com/santiagovj22/wenia-idp.git
+cd wenia-idp
+
+# 2. Configurar secretos
+cp .env.example .env
+# Editar .env con GITHUB_TOKEN
+
+# 3. Bootstrap del entorno (Ansible)
+docker run --rm -v "${PWD}:/workspace" -w /workspace cytopia/ansible:2.15 `
+  ansible-playbook ansible/bootstrap.yml -c local
+
+# 4. Iniciar la plataforma
+docker compose up --build
+
+# 5. Abrir http://localhost:7007 → Create → Wenia Service Template
+```
+
 ---
 
 ## Repository layout
@@ -63,38 +86,16 @@ First start is slow (~3–5 min) while the image builds and migrations run.
 ```
 backstage/          Backstage app (runs in Docker)
   catalog/          Seeded Groups and template locations
-modules/
-  scaffolder-wenia/ Custom scaffolder module (wenia:preflight, wenia:publish)
+  plugins/          Scaffold for wenia module
 templates/
   service/          Service Template: template.yaml, VERSION, skeleton layers
-ansible/            Environment bootstrap playbook (Evidence E7)
-docs/               Technical document, troubleshooting, provenance, AI usage
-data/               Screenshots and evidence (gitignored at runtime)
+ansible/            Environment bootstrap playbook
+docs/               Technical document, troubleshooting, provenance
+validation-evidence/               Screenshots and evidence
 ```
 
----
 
-## Verification evidence
-
-Evidence is documented with screenshots in `data/`. See `docs/DOCUMENTO-TECNICO.md` for the full verification results.
-
-| ID | Description | Needs account |
-| --- | --- | --- |
-| E1 | Valid service created and registered | None |
-| E2 | Invalid request rejected | None |
-| E3 | Duplicate name detected | GitHub token |
-| E4 | Failure during generation handled | GitHub token |
-| E5 | API tests pass (CI green) | None |
-| E6 | Terraform static validation | None |
-| E7 | Ansible second run: changed=0 | None |
-| E8 | Live telemetry in New Relic | New Relic (free) |
-| E9 | Real AWS deployment | AWS (stretch) |
-
-Static checks (E6, K8s manifests) are labelled as such and are **not** deployments.
-
----
-
-## Demonstrate failure injection (Evidence E4)
+## Demonstrate failure injection
 
 ```powershell
 # 1. Enable injection mode in .env
@@ -113,4 +114,4 @@ All planning artifacts (brief, PRD, architecture spine, epics) live in `_bmad-ou
 
 ## Provenance and AI usage
 
-See `docs/PROVENANCE.md` and `docs/AI-USAGE.md`.
+See `docs/PROVENANCE.md`.

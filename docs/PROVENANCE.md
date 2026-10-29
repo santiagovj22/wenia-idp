@@ -9,13 +9,14 @@ The case allows the standard Backstage distribution, its official components and
 | Backstage (standard distribution, created with `@backstage/create-app` 0.9.3, app version 1.56.0) | https://github.com/backstage/backstage | Apache-2.0 | `backstage/` | Story 1.1 |
 
 Official Backstage packages used later (scaffolder, catalog, GitHub integration) are listed here when they are added.
+| cytopia/ansible:2.15 | https://hub.docker.com/r/cytopia/ansible | MIT | `ansible/` — environment bootstrap (story 1.3) | Story 1.3 |
 
 ## Development method and tooling (not shipped in the product)
 
 | Tool | Origin | Use | Notes |
 | --- | --- | --- | --- |
-| BMAD Method (installed in `_bmad/` and `.claude/skills/`) | https://github.com/bmad-code-org/BMAD-METHOD | Planning workflow: brief, PRD, architecture, epics and stories | License to be confirmed before submission |
-| Claude Code (Claude Sonnet 5.5) | Anthropic | AI-assisted development, see `docs/AI-USAGE.md` | |
+| BMAD Method (installed in `_bmad/` and `.claude/skills/`) | https://github.com/bmad-code-org/BMAD-METHOD | Planning workflow: brief, PRD, architecture, epics and stories | License free |
+| Claude Code (Claude Sonnet 5.5) | Anthropic | AI-assisted development |
 
 ## Not used
 
