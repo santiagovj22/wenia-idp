@@ -16,13 +16,21 @@ function init () {
     const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-http')
     const { resourceFromAttributes } = require('@opentelemetry/resources')
     const { ATTR_SERVICE_NAME } = require('@opentelemetry/semantic-conventions')
-
+    const { Resource } = require('@opentelemetry/resources')
+    const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumentations-node')
+    
     const sdk = new NodeSDK({
-      resource: resourceFromAttributes({
-        [ATTR_SERVICE_NAME]: '${{ values.serviceName }}',
+      resource: new Resource({
+        'service.name': '${{ values.serviceName }}',
         'wenia.template.version': '${{ values.templateVersion }}'
       }),
-      traceExporter: new OTLPTraceExporter()
+      traceExporter: new OTLPTraceExporter(),
+      instrumentations: [getNodeAutoInstrumentations({
+        // Disable noisy instrumentations, keep HTTP and Fastify
+        '@opentelemetry/instrumentation-fs': { enabled: false },
+        '@opentelemetry/instrumentation-dns': { enabled: false },
+        '@opentelemetry/instrumentation-net': { enabled: false },
+      })]
     })
     sdk.start()
     console.log(JSON.stringify({

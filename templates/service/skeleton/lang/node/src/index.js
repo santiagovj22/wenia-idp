@@ -1,10 +1,11 @@
 'use strict'
-
+const telemetry = require('./telemetry')
+telemetry.init()
 const fastify = require('fastify')
 
 const healthRoutes = require('./routes/health')
 const itemsRoutes = require('./routes/items')
-const telemetry = require('./telemetry')
+
 
 async function buildApp (opts = {}) {
   const app = fastify({
@@ -26,7 +27,7 @@ async function buildApp (opts = {}) {
 }
 
 if (require.main === module) {
-  telemetry.init()
+
   buildApp().then(app => {
     const port = parseInt(process.env.PORT || '3000', 10)
     app.listen({ port, host: '0.0.0.0' }, (err) => {
