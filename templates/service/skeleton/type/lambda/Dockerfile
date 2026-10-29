@@ -6,6 +6,6 @@ FROM public.ecr.aws/lambda/nodejs:22
 COPY src/ ${LAMBDA_TASK_ROOT}/src/
 COPY package*.json ${LAMBDA_TASK_ROOT}/
 
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 CMD ["src/handler.handler"]

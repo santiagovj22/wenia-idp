@@ -4,7 +4,7 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 COPY src/ ./src/
 
 FROM node:22-alpine AS runner
