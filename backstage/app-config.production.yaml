@@ -14,6 +14,9 @@ backend:
       port: ${POSTGRES_PORT}
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
+  reading:
+    allow:
+      - host: raw.githubusercontent.com
 
 # GitHub integration — the token is supplied by the GITHUB_TOKEN env var.
 # AD-10: never put the token value here.

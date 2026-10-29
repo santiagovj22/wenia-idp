@@ -10,7 +10,11 @@
   },
   "dependencies": {
     "fastify": "^4.28.1",
-    "pino": "^9.5.0"
+    "pino": "^9.5.0",
+    "@opentelemetry/sdk-node": "^0.57.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.57.0",
+    "@opentelemetry/resources": "^1.30.0",
+    "@opentelemetry/semantic-conventions": "^1.30.0"
   },
   "devDependencies": {
     "js-yaml": "^4.1.0"
